@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/safari-pinned-tab.svg?v=7.0.0" color="#222">
+
+
+  <link rel="manifest" href="/images/site.webmanifest">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.0.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="前言一直在用 react，什么是虚拟 dom，什么是 diff 算法，这篇文章我觉得大概能说清楚这两个问题 虚拟 DOM如下一个正常的 html 123456&amp;lt;div id=&quot;thisdiv&quot;&amp;gt;  &amp;lt;ul id=&quot;thisul&quot;&amp;gt;    &amp;lt;li&amp;gt;item1&amp;lt;/li&amp;gt;    &amp;lt;li&amp;gt;item2&amp;lt;/li&amp;gt;  &amp;lt;/ul&amp;gt;">
+<meta name="keywords" content="react,diff">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React虚拟DOM的那些事">
+<meta property="og:url" content="http://liaoyf.com/2019/03/18/l4/index.html">
+<meta property="og:site_name" content="别来无恙">
+<meta property="og:description" content="前言一直在用 react，什么是虚拟 dom，什么是 diff 算法，这篇文章我觉得大概能说清楚这两个问题 虚拟 DOM如下一个正常的 html 123456&amp;lt;div id=&quot;thisdiv&quot;&amp;gt;  &amp;lt;ul id=&quot;thisul&quot;&amp;gt;    &amp;lt;li&amp;gt;item1&amp;lt;/li&amp;gt;    &amp;lt;li&amp;gt;item2&amp;lt;/li&amp;gt;  &amp;lt;/ul&amp;gt;">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://liaoyf.com/images/diff1.jpg">
+<meta property="og:updated_time" content="2019-03-19T14:06:12.084Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React虚拟DOM的那些事">
+<meta name="twitter:description" content="前言一直在用 react，什么是虚拟 dom，什么是 diff 算法，这篇文章我觉得大概能说清楚这两个问题 虚拟 DOM如下一个正常的 html 123456&amp;lt;div id=&quot;thisdiv&quot;&amp;gt;  &amp;lt;ul id=&quot;thisul&quot;&amp;gt;    &amp;lt;li&amp;gt;item1&amp;lt;/li&amp;gt;    &amp;lt;li&amp;gt;item2&amp;lt;/li&amp;gt;  &amp;lt;/ul&amp;gt;">
+<meta name="twitter:image" content="http://liaoyf.com/images/diff1.jpg">
+
+
+
+
+
+
+  <link rel="canonical" href="http://liaoyf.com/2019/03/18/l4/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>React虚拟DOM的那些事 | 别来无恙</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">别来无恙</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaoyf.com/2019/03/18/l4/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="五月幺幺">
+      <meta itemprop="description" content="被代码耽误的文青">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="别来无恙">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">React虚拟DOM的那些事
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-18 18:12:06" itemprop="dateCreated datePublished" datetime="2019-03-18T18:12:06+08:00">2019-03-18</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/学习笔记/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>一直在用 react，什么是虚拟 dom，什么是 diff 算法，这篇文章我觉得大概能说清楚这两个问题</p>
+<h2 id="虚拟-DOM"><a href="#虚拟-DOM" class="headerlink" title="虚拟 DOM"></a>虚拟 DOM</h2><p>如下一个正常的 html</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"thisdiv"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">ul</span> <span class="attr">id</span>=<span class="string">"thisul"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>item1<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>item2<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>就是虚拟 DOM 用 js 对象，存储了 DOM 节点信息。如下就是一个简易虚拟 DOM 的结构</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> dom = &#123;</span><br><span class="line">  type: <span class="string">'div'</span>,</span><br><span class="line">  props: &#123;</span><br><span class="line">    id: <span class="string">'thisdiv'</span>,</span><br><span class="line">    children: &#123;</span><br><span class="line">      type: <span class="string">'ul'</span>,</span><br><span class="line">      props: &#123;</span><br><span class="line">        id: <span class="string">'thisul'</span>,</span><br><span class="line">        children: [</span><br><span class="line">          &#123;</span><br><span class="line">            type: <span class="string">'li'</span>,</span><br><span class="line">            props: &#123; <span class="attr">children</span>: <span class="string">'item1'</span> &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            type: <span class="string">'li'</span>,</span><br><span class="line">            props: &#123; <span class="attr">children</span>: <span class="string">'item2'</span> &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实现一个 creactElement 的方法，创建虚拟 dom</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//生成虚拟dom</span></span><br><span class="line"><span class="keyword">const</span> creactElement = <span class="function">(<span class="params">tag, props, ...children</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    type: tag,</span><br><span class="line">    props: &#123;</span><br><span class="line">      ...props,</span><br><span class="line">      children: children</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实现一个 render 方法，将以上的虚拟 dom 渲染成真实 dom</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//渲染成真实dom</span></span><br><span class="line"><span class="keyword">const</span> render = <span class="function">(<span class="params">vdom, dom</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> renderEl = <span class="function"><span class="params">vdom</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> vdom === <span class="string">'string'</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">document</span>.createTextNode(vdom)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">const</span> el = <span class="built_in">document</span>.createElement(vdom.type)</span><br><span class="line">    <span class="keyword">if</span> (vdom &amp;&amp; vdom.props) &#123;</span><br><span class="line">      <span class="keyword">const</span> props = vdom.props</span><br><span class="line">      props.id &amp;&amp; el.setAttribute(<span class="string">'id'</span>, props.id)</span><br><span class="line">      props.children.map(renderEl).forEach(el.appendChild.bind(el))</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> el</span><br><span class="line">  &#125;</span><br><span class="line">  dom.appendChild(renderEl(vdom))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>jsx 语法创建虚拟 dom，babel 后其实就是如下的 creactElement</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> ele = creactElement(</span><br><span class="line">  <span class="string">'div'</span>,</span><br><span class="line">  &#123; <span class="attr">id</span>: <span class="string">'thisdiv'</span> &#125;,</span><br><span class="line">  creactElement(</span><br><span class="line">    <span class="string">'ul'</span>,</span><br><span class="line">    &#123; <span class="attr">id</span>: <span class="string">'thisul'</span> &#125;,</span><br><span class="line">    creactElement(<span class="string">'li'</span>, <span class="literal">null</span>, <span class="string">'line1'</span>),</span><br><span class="line">    creactElement(<span class="string">'li'</span>, <span class="literal">null</span>, <span class="string">'line2'</span>)</span><br><span class="line">  )</span><br><span class="line">)</span><br><span class="line">render(ele, <span class="built_in">document</span>.getElementById(<span class="string">'root'</span>))</span><br></pre></td></tr></table></figure>
+<h2 id="Diff-算法"><a href="#Diff-算法" class="headerlink" title="Diff 算法"></a>Diff 算法</h2><p>当有操作要改变 UI 展示的时候就要用到 diff 来计算需要更新哪些节点<br>两树的完全 diff 时间复杂度为 O(n<sup>3</sup>)，实际上 DOM 的跨层操作是非常少的，React 就采用了时间复杂度为 O(n)的同层 diff<br><img src="/images/diff1.jpg" alt="diff tree"></p>
+<h3 id="记录差异"><a href="#记录差异" class="headerlink" title="记录差异"></a>记录差异</h3><p>通过深度遍历，记录差异，生成 patch</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> patchs = &#123;&#125;</span><br><span class="line"><span class="comment">//深度遍历,获取差异部分</span></span><br><span class="line"><span class="keyword">const</span> diff = <span class="function">(<span class="params">oldTree, newTree, patchs, index</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (!newTree) &#123;</span><br><span class="line">    <span class="comment">//新树不存在的节点</span></span><br><span class="line">    patchs[index] = &#123;</span><br><span class="line">      type: <span class="string">'删除'</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (oldTree.type !== newTree.type) &#123;</span><br><span class="line">    <span class="comment">//类型不同直接替换</span></span><br><span class="line">    patchs[index] = &#123;</span><br><span class="line">      type: <span class="string">'替换'</span>,</span><br><span class="line">      node: newTree</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">//类型相同</span></span><br><span class="line">    <span class="comment">//比较属性，如果属性不同重制属性</span></span><br><span class="line">    diffAttr(oldTree.props, newTree.props, patchs, index)</span><br><span class="line">    diffChildren(oldTree.props.childern, newTree.props.childern, index) <span class="comment">//比较子树</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> diffAttr = <span class="function">(<span class="params">oldProps, newProps, patchs, index</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="comment">// 如果属性不相同，重制属性。这里会比所有的属性，就不写代码实现了</span></span><br><span class="line">  <span class="comment">// if(oldProps不等于newProps)&#123;</span></span><br><span class="line">  <span class="comment">//   patchs[index]=&#123;</span></span><br><span class="line">  <span class="comment">//     type:'属性',</span></span><br><span class="line">  <span class="comment">//     attribute: &#123;&#125;</span></span><br><span class="line">  <span class="comment">//   &#125;</span></span><br><span class="line">  <span class="comment">// &#125;</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> diffChildren = <span class="function">(<span class="params">oldChildren, newChildren, index</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; oldChildren.length; i++) &#123;</span><br><span class="line">    dfs(oldChildren[i], newChildren[i], index++)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如果是列表，以 key 为索引<br>原列表 key 为 a,b,c,d；现列表为 b,a,d,c,e,f<br>知道新旧列表，求最小插入删除操作，可以用动态规划来解决，这里不展开说明</p>
+</blockquote>
+<h3 id="作用差异"><a href="#作用差异" class="headerlink" title="作用差异"></a>作用差异</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> patch=<span class="function">(<span class="params">node, patches</span>)=&gt;</span>&#123;</span><br><span class="line">  <span class="keyword">let</span> walker = &#123;<span class="attr">index</span>: <span class="number">0</span>&#125;</span><br><span class="line">  dfs(node,patches,walker)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> dfs=<span class="function">(<span class="params">node,patchs,walker</span>)=&gt;</span>&#123;</span><br><span class="line">  <span class="keyword">let</span> patch = patches[walker.index] <span class="comment">// 从patches拿出当前节点的差异</span></span><br><span class="line">  <span class="keyword">let</span> len = node.childNodes ? node.childNodes.length : <span class="number">0</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; len; i++) &#123; <span class="comment">// 深度遍历子节点</span></span><br><span class="line">    <span class="keyword">let</span> child = node.childNodes[i]</span><br><span class="line">    walker.index++</span><br><span class="line">    dfs(child, patchs, walker)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (patch) &#123;</span><br><span class="line">    applyPatch(node, patch) <span class="comment">// 对当前节点进行DOM操作</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> applyPatch=<span class="function">(<span class="params">node, patch</span>)=&gt;</span>&#123;</span><br><span class="line">  <span class="comment">//根据不同类型做不同操作</span></span><br><span class="line">  <span class="keyword">switch</span>(patch.type)&#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">'删除'</span>:</span><br><span class="line">      ...</span><br><span class="line">    <span class="keyword">case</span> <span class="string">'替换'</span>:</span><br><span class="line">      ...</span><br><span class="line">    <span class="keyword">case</span> <span class="string">'属性'</span>:</span><br><span class="line">      ...</span><br><span class="line">    <span class="keyword">case</span> <span class="string">'移动'</span>:</span><br><span class="line">      ...</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>综上，简单来说 React 虚拟 dom 的事儿就是一个构建虚拟 dom，比较差异，记录差异，作用差异的过程<br>creactElement-&gt;render-&gt;update(diff-&gt;patch)</p>
+<p>下一篇我们来看一下 React16 的新特性 Fiber</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/react/" rel="tag"># react</a>
+          
+            <a href="/tags/diff/" rel="tag"># diff</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/03/15/l3/" rel="next" title="浏览器工作原理">
+                <i class="fa fa-chevron-left"></i> 浏览器工作原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpeg" alt="五月幺幺">
+            
+              <p class="site-author-name" itemprop="name">五月幺幺</p>
+              <p class="site-description motion-element" itemprop="description">被代码耽误的文青</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/liaoyf" title="GitHub &rarr; https://github.com/liaoyf" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:liao_yf@126.com" title="E-Mail &rarr; mailto:liao_yf@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟-DOM"><span class="nav-number">2.</span> <span class="nav-text">虚拟 DOM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Diff-算法"><span class="nav-number">3.</span> <span class="nav-text">Diff 算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#记录差异"><span class="nav-number">3.1.</span> <span class="nav-text">记录差异</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#作用差异"><span class="nav-number">3.2.</span> <span class="nav-text">作用差异</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">五月幺幺</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.0"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
