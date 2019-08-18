@@ -326,6 +326,246 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaoyf.com/2019/08/15/l5/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="五月幺幺">
+      <meta itemprop="description" content="被代码耽误的文青">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="别来无恙">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/08/15/l5/" class="post-title-link" itemprop="url">Babel详解</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-15 20:49:42" itemprop="dateCreated datePublished" datetime="2019-08-15T20:49:42+08:00">2019-08-15</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/学习笔记/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Babel-原理之三部曲"><a href="#Babel-原理之三部曲" class="headerlink" title="Babel 原理之三部曲"></a>Babel 原理之三部曲</h2><blockquote>
+<p>会编译原理的人真的可以为所欲为</p>
+</blockquote>
+<h3 id="Parse（解析）"><a href="#Parse（解析）" class="headerlink" title="Parse（解析）"></a>Parse（解析）</h3><blockquote>
+<p>通过@babel/parser（原 babylon），将 js 代码根据<a href="https://github.com/estree/estree" target="_blank" rel="noopener">ESTree</a>的规范解析成 <strong>AST</strong>（<code>Abstract Syntax Tree</code>）</p>
+</blockquote>
+<p>如下将</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> sum = <span class="function"><span class="params">()</span> =&gt;</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+<p>解析为 AST 树</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> parse = <span class="built_in">require</span>(<span class="string">"@babel/parser"</span>).parse</span><br><span class="line"><span class="keyword">var</span> code = <span class="string">`const sum=()=&gt;&#123;&#125;`</span></span><br><span class="line"><span class="keyword">var</span> ast = parse(code)</span><br></pre></td></tr></table></figure>
+<p>AST:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="string">"type"</span>: <span class="string">"File"</span>,</span><br><span class="line">    <span class="string">"program"</span>: &#123;<span class="comment">//根节点，完整的抽象语法树</span></span><br><span class="line">        <span class="string">"type"</span>: <span class="string">"Program"</span>,</span><br><span class="line">        <span class="string">"sourceType"</span>: <span class="string">"script"</span>,</span><br><span class="line">        <span class="string">"interpreter"</span>: <span class="literal">null</span>,</span><br><span class="line">        <span class="string">"body"</span>: [</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="string">"type"</span>: <span class="string">"VariableDeclaration"</span>,<span class="comment">//变量声明</span></span><br><span class="line">                <span class="string">"declarations"</span>: [</span><br><span class="line">                    &#123;</span><br><span class="line">                        <span class="string">"type"</span>: <span class="string">"VariableDeclarator"</span>,<span class="comment">//变量声明</span></span><br><span class="line">                        <span class="string">"id"</span>: &#123;</span><br><span class="line">                            <span class="string">"type"</span>: <span class="string">"Identifier"</span>,<span class="comment">//标识符 变量名称等</span></span><br><span class="line">                            <span class="string">"name"</span>: <span class="string">"sum"</span></span><br><span class="line">                        &#125;,</span><br><span class="line">                        <span class="string">"init"</span>: &#123;<span class="comment">//初始的表达式</span></span><br><span class="line">                            <span class="string">"type"</span>: <span class="string">"ArrowFunctionExpression"</span>,<span class="comment">//箭头函数</span></span><br><span class="line">                            <span class="string">"id"</span>: <span class="literal">null</span>,</span><br><span class="line">                            <span class="string">"generator"</span>: <span class="literal">false</span>,</span><br><span class="line">                            <span class="string">"async"</span>: <span class="literal">false</span>,</span><br><span class="line">                            <span class="string">"params"</span>: [],</span><br><span class="line">                            <span class="string">"body"</span>: &#123;</span><br><span class="line">                                <span class="string">"type"</span>: <span class="string">"BlockStatement"</span>,<span class="comment">//块语句节点</span></span><br><span class="line">                                <span class="string">"body"</span>: [],</span><br><span class="line">                                <span class="string">"directives"</span>: []</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                ],</span><br><span class="line">                <span class="string">"kind"</span>: <span class="string">"const"</span><span class="comment">//类型</span></span><br><span class="line">            &#125;</span><br><span class="line">        ],</span><br><span class="line">        <span class="string">"directives"</span>: []</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"comments"</span>: []</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Transform（转换）"><a href="#Transform（转换）" class="headerlink" title="Transform（转换）"></a>Transform（转换）</h3><blockquote>
+<p>babel 并不具备转换的功能，转换都是通过转换插件来完成的<br>官方插件以@babel/plugin-transform（正式）@babel/plugin-proposal（提案）开头</p>
+</blockquote>
+<h4 id="plugins"><a href="#plugins" class="headerlink" title="plugins"></a>plugins</h4><blockquote>
+<p>插件</p>
+</blockquote>
+<ul>
+<li>@babel/plugin-proposal-function-bind [Stage 0]</li>
+<li>@babel/plugin-proposal-decorators [Stage 2]</li>
+<li>@babel/plugin-proposal-class-properties[Stage 3]</li>
+<li>…</li>
+</ul>
+<h4 id="presets"><a href="#presets" class="headerlink" title="presets"></a>presets</h4><blockquote>
+<p>常用的插件的集合</p>
+</blockquote>
+<p>常用的</p>
+<ul>
+<li>@babel/preset-env 正式批准的内容，现包含（es2015、es2016、es2017…）</li>
+<li>@babel/preset-react</li>
+<li>@babel/preset-typescript</li>
+<li>…</li>
+</ul>
+<h4 id="执行顺序"><a href="#执行顺序" class="headerlink" title="执行顺序"></a>执行顺序</h4><ul>
+<li>先 plugins 再 presets</li>
+<li>plugins 正序</li>
+<li>presets 倒序</li>
+</ul>
+<h3 id="Generator（生成）"><a href="#Generator（生成）" class="headerlink" title="Generator（生成）"></a>Generator（生成）</h3><blockquote>
+<p>通过@babel/generator，将 AST 生成代码</p>
+</blockquote>
+<p>AST 生成代码</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> generate = <span class="built_in">require</span>(<span class="string">"@babel/generator"</span>).default</span><br><span class="line"><span class="keyword">var</span> code = generate(ast).code</span><br></pre></td></tr></table></figure>
+<h2 id="Babel-配套工具"><a href="#Babel-配套工具" class="headerlink" title="Babel 配套工具"></a>Babel 配套工具</h2><h3 id="babel-cli"><a href="#babel-cli" class="headerlink" title="@babel/cli"></a>@babel/cli</h3><blockquote>
+<p>命令行工具</p>
+</blockquote>
+<h3 id="babel-core"><a href="#babel-core" class="headerlink" title="@babel/core"></a>@babel/core</h3><blockquote>
+<p>babel 核心，其中包含之前说的 @babel/parser 和@babel/generator</p>
+</blockquote>
+<h3 id="babel-register"><a href="#babel-register" class="headerlink" title="@babel/register"></a>@babel/register</h3><blockquote>
+<p>改写 require 命令，对 require 加载对文件进行转码</p>
+</blockquote>
+<p>在文件里面加载 require(‘babel-register’)，不作用于当前的文件</p>
+<h3 id="babel-polyfill"><a href="#babel-polyfill" class="headerlink" title="@babel/polyfill"></a>@babel/polyfill</h3><blockquote>
+<p>意为垫片或补丁包</p>
+</blockquote>
+<p>babel 插件只对新语法做转换，而不转换新对 API 例如：Generator、Set、Maps、Proxy、Reflect、Symbol、Promise 等全局对象，或者是定义在全局对象上的方法，Array.from、Object.assign 等。</p>
+<p><code>@babel/polyfill</code> 其实就是<code>core-js</code>、<code>regenerator-runtime</code></p>
+<p>babel7.4 之前直接使用<code>@babel/polyfill</code></p>
+<p>polyfill 的方式根据 useBuiltIns 的不同可以分为三种，即 <code>entry</code>, <code>usage</code> ,<code>false</code>，可配合 preset-env 使用</p>
+<p>待 babel 的源码如下</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> sum = <span class="function"><span class="params">()</span> =&gt;</span> &#123;&#125;</span><br><span class="line"><span class="keyword">const</span> pro = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">()</span> =&gt;</span> &#123;&#125;)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>entry：引入补丁兼容浏览器配置的补丁</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">"use strict"</span>;</span><br><span class="line"><span class="built_in">require</span>(<span class="string">"core-js/modules/es6.array.reduce"</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">require</span>(<span class="string">"core-js/modules/es6.array.reduce-right"</span>);</span><br><span class="line">...</span><br><span class="line"><span class="built_in">require</span>(<span class="string">"core-js/modules/es6.promise"</span>);</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> sum = <span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params"></span>) </span>&#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> pro = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;&#125;);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>usage：引入代码中用到的补丁</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">"use strict"</span></span><br><span class="line"><span class="built_in">require</span>(<span class="string">"core-js/modules/es6.promise"</span>)</span><br><span class="line"><span class="keyword">var</span> sum = <span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"><span class="keyword">var</span> pro = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>false：引入所有补丁</li>
+</ul>
+<p>这样就解决了新 API 的问题，但是这种方式又带了另一种问题，就是全局污染，那就引出了另一个解决这个问题的插件<code>@babel/runtime`</code>@babel/plugin-transform-runtime `</p>
+<h3 id="babel-runtime、-babel-plugin-transform-runtime"><a href="#babel-runtime、-babel-plugin-transform-runtime" class="headerlink" title="@babel/runtime、@babel/plugin-transform-runtime"></a>@babel/runtime、@babel/plugin-transform-runtime</h3><ul>
+<li><p><code>@babel/runtime</code>实际导入项目代码的功能模块</p>
+</li>
+<li><p><code>@babel/plugin-transform-runtime</code>构建过程的代码转换</p>
+</li>
+</ul>
+<p>缺点，不能对实例进行转换</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">"use strict"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> _interopRequireDefault = <span class="built_in">require</span>(<span class="string">"@babel/runtime-corejs2/helpers/interopRequireDefault"</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">require</span>(<span class="string">"core-js/modules/es7.array.includes"</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">require</span>(<span class="string">"core-js/modules/es6.string.includes"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> _promise = _interopRequireDefault(</span><br><span class="line">    <span class="built_in">require</span>(<span class="string">"@babel/runtime-corejs2/core-js/promise"</span>)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> sum = <span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> pro = <span class="keyword">new</span> _promise.default(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;)</span><br><span class="line"><span class="string">"hello"</span>.includes(<span class="string">"h"</span>) <span class="comment">//还是通过polyfill 用全局变量的方式实现</span></span><br></pre></td></tr></table></figure>
+<p>不能对实例上的方法打沙盒补丁该怎么办呢，这时就出现了 babel7.4+<br>废弃 polyfill，单独引入<code>core-js</code>,<code>regenerator-runtime</code>，而且 core-js3 也解决了实例的方法的问题</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">"use strict"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> _interopRequireDefault = <span class="built_in">require</span>(<span class="string">"@babel/runtime-corejs3/helpers/interopRequireDefault"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> _includes = _interopRequireDefault(</span><br><span class="line">    <span class="built_in">require</span>(<span class="string">"@babel/runtime-corejs3/core-js-stable/instance/includes"</span>)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> _promise = _interopRequireDefault(</span><br><span class="line">    <span class="built_in">require</span>(<span class="string">"@babel/runtime-corejs3/core-js-stable/promise"</span>)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> _context</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> pro = <span class="keyword">new</span> _promise[<span class="string">"default"</span>](<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;)</span><br><span class="line">;(<span class="number">0</span>, _includes[<span class="string">"default"</span>])((_context = <span class="string">"hello"</span>)).call(_context, <span class="string">"h"</span>)</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://liaoyf.com/2019/03/18/l4/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -1109,7 +1349,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-count">5</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1153,7 +1393,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">6</span>
+                      
+                    
+                    <span class="site-state-item-count">7</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
