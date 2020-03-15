@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/safari-pinned-tab.svg?v=7.0.0" color="#222">
+
+
+  <link rel="manifest" href="/images/site.webmanifest">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.0.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="react定义为react-core更容易理解一点。  react代码很少只有两千多行，描述的是react对外的API，以及元素虚拟的数据结构，包含了Web和Mobile通用的核心部分 react-dom 负责和Web页面的DOM打交道 react-native 负责原生应用实现  本文只介绍react核心代码 React.createElementJsx只是语法糖，babel后是createEl">
+<meta name="keywords" content="react">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React源码初探">
+<meta property="og:url" content="http://liaoyf.com/2020/03/05/ck7t4nu2n0005zrpj993eenky/index.html">
+<meta property="og:site_name" content="别来无恙">
+<meta property="og:description" content="react定义为react-core更容易理解一点。  react代码很少只有两千多行，描述的是react对外的API，以及元素虚拟的数据结构，包含了Web和Mobile通用的核心部分 react-dom 负责和Web页面的DOM打交道 react-native 负责原生应用实现  本文只介绍react核心代码 React.createElementJsx只是语法糖，babel后是createEl">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://liaoyf.com/images/react/jsxa.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/createElement.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/cloneElement.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/ReactElement.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/Component.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/PureComponent.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/createContext.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/MyContext.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/createRef.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/forwardRef.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/forwardRefUse.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/memo.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/memoUse.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/lazy.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/lazyUse.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/resolveDispatcher.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/useImperativeHandle.png">
+<meta property="og:image" content="http://liaoyf.com/images/react/useTransition.png">
+<meta property="og:updated_time" content="2020-03-15T14:21:47.830Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React源码初探">
+<meta name="twitter:description" content="react定义为react-core更容易理解一点。  react代码很少只有两千多行，描述的是react对外的API，以及元素虚拟的数据结构，包含了Web和Mobile通用的核心部分 react-dom 负责和Web页面的DOM打交道 react-native 负责原生应用实现  本文只介绍react核心代码 React.createElementJsx只是语法糖，babel后是createEl">
+<meta name="twitter:image" content="http://liaoyf.com/images/react/jsxa.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://liaoyf.com/2020/03/05/ck7t4nu2n0005zrpj993eenky/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>React源码初探 | 别来无恙</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">别来无恙</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaoyf.com/2020/03/05/ck7t4nu2n0005zrpj993eenky/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="五月幺幺">
+      <meta itemprop="description" content="被代码耽误的文青">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="别来无恙">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">React源码初探
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-03-05 20:18:40" itemprop="dateCreated datePublished" datetime="2020-03-05T20:18:40+08:00">2020-03-05</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/笔记/" itemprop="url" rel="index"><span itemprop="name">笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>react定义为react-core更容易理解一点。</p>
+<ul>
+<li>react代码很少只有两千多行，描述的是react对外的API，以及元素虚拟的数据结构，包含了Web和Mobile通用的核心部分</li>
+<li>react-dom 负责和Web页面的DOM打交道</li>
+<li>react-native 负责原生应用实现</li>
+</ul>
+<p>本文只介绍react核心代码</p>
+<h2 id="React-createElement"><a href="#React-createElement" class="headerlink" title="React.createElement"></a>React.createElement</h2><p>Jsx只是语法糖，babel后是createElement，其核心是创建一个<code>ReactElement</code>。</p>
+<p>先简单看一个jsx babel后的代码</p>
+<p><img src="/images/react/jsxa.png" alt="jsxa"></p>
+<p>下面看<code>createElement</code>具体做了些什么事</p>
+<p><img src="/images/react/createElement.png" alt="createElement"></p>
+<h2 id="React-cloneElement"><a href="#React-cloneElement" class="headerlink" title="React.cloneElement"></a>React.cloneElement</h2><p>创建一个新的<code>ReactElement</code>复制被clone element的key、ref、props、children</p>
+<p><img src="/images/react/cloneElement.png" alt="cloneElement"></p>
+<p><code>ReactElement</code>核心是创建标示为<code>REACT_ELEMENT_TYPE</code>的对象<br><img src="/images/react/ReactElement.png" alt="ReactElement"></p>
+<h2 id="React-Component"><a href="#React-Component" class="headerlink" title="React.Component"></a>React.Component</h2><p><img src="/images/react/Component.png" alt="Component"></p>
+<h2 id="React-PureComponent"><a href="#React-PureComponent" class="headerlink" title="React.PureComponent"></a>React.PureComponent</h2><p><img src="/images/react/PureComponent.png" alt="PureComponent"></p>
+<h2 id="React-Children"><a href="#React-Children" class="headerlink" title="React.Children"></a>React.Children</h2><p>因为children是不确定的数据结构，<code>React.Children</code>提供一组方法处理children，包含<code>forEach</code>,<code>map</code>,<code>count</code>,<code>only</code>,<code>toArray</code></p>
+<h2 id="React-createContext"><a href="#React-createContext" class="headerlink" title="React.createContext"></a>React.createContext</h2><p>创建context，提供Provider、Consumer<br><img src="/images/react/createContext.png" alt="createContext"></p>
+<p>用法也比较简单</p>
+<p><img src="/images/react/MyContext.png" alt="MyContext"></p>
+<h2 id="React-createRef"><a href="#React-createRef" class="headerlink" title="React.createRef"></a>React.createRef</h2><p>使用ref只用取出里面的<code>current</code>就可以了</p>
+<p><img src="/images/react/createRef.png" alt="createRef"></p>
+<h2 id="React-forwardRef"><a href="#React-forwardRef" class="headerlink" title="React.forwardRef"></a>React.forwardRef</h2><p>函数式组件传递ref要用<code>forwardRef</code><br><img src="/images/react/forwardRef.png" alt="forwardRef"></p>
+<p>用法也很简单</p>
+<p><img src="/images/react/forwardRefUse.png" alt="forwardRefUse"></p>
+<h2 id="React-memo"><a href="#React-memo" class="headerlink" title="React.memo"></a>React.memo</h2><p>它与 React.PureComponent 非常相似，但它适用于函数组件，但不适用于 class 组件。<br>仅影响 props 变更<br><img src="/images/react/memo.png" alt="memo"></p>
+<p>用法如下</p>
+<p><img src="/images/react/memoUse.png" alt="memoUse"></p>
+<h2 id="React-lazy"><a href="#React-lazy" class="headerlink" title="React.lazy"></a>React.lazy</h2><p>延迟加载组件，可配合<code>Suspense</code>组件使用，Tip：服务端不能用此组件，所以同构的项目需要注意下</p>
+<p><img src="/images/react/lazy.png" alt="lazy"></p>
+<p>用法，在OtherComponent还没加载完成时会渲染fallback返回的组件</p>
+<p><img src="/images/react/lazyUse.png" alt="lazyUse"></p>
+<h2 id="React-Hook"><a href="#React-Hook" class="headerlink" title="React Hook"></a>React Hook</h2><p>核心为dispatcher<br><img src="/images/react/resolveDispatcher.png" alt="resolveDispatcher"></p>
+<h3 id="useCallback"><a href="#useCallback" class="headerlink" title="useCallback"></a>useCallback</h3><p>缓存函数</p>
+<h3 id="useMemo"><a href="#useMemo" class="headerlink" title="useMemo"></a>useMemo</h3><p>缓存函数</p>
+<h3 id="useContext"><a href="#useContext" class="headerlink" title="useContext"></a>useContext</h3><p>上下文共享状态 <code>dispatcher.useContext(Context, unstable_observedBits)</code></p>
+<h3 id="useEffect"><a href="#useEffect" class="headerlink" title="useEffect"></a>useEffect</h3><p>副作用</p>
+<h3 id="useLayoutEffect"><a href="#useLayoutEffect" class="headerlink" title="useLayoutEffect"></a>useLayoutEffect</h3><p>副作用（阻塞)</p>
+<h3 id="useImperativeHandle"><a href="#useImperativeHandle" class="headerlink" title="useImperativeHandle"></a>useImperativeHandle</h3><p>暴露子组件命令句柄</p>
+<p><img src="/images/react/useImperativeHandle.png" alt="useImperativeHandle"></p>
+<h3 id="useDebugValue"><a href="#useDebugValue" class="headerlink" title="useDebugValue"></a>useDebugValue</h3><p> 调试hooks</p>
+<h3 id="useReducer"><a href="#useReducer" class="headerlink" title="useReducer"></a>useReducer</h3><p>action hook</p>
+<h3 id="useRef"><a href="#useRef" class="headerlink" title="useRef"></a>useRef</h3><p>ref引用</p>
+<h3 id="useState"><a href="#useState" class="headerlink" title="useState"></a>useState</h3><p>state Hook</p>
+<h3 id="useTransition"><a href="#useTransition" class="headerlink" title="useTransition"></a>useTransition</h3><blockquote>
+<p>Concurrent UI 模式 (试验阶段)</p>
+</blockquote>
+<p>延迟处理</p>
+<p><img src="/images/react/useTransition.png" alt="useTransition"></p>
+<h3 id="useDeferredValue"><a href="#useDeferredValue" class="headerlink" title="useDeferredValue"></a>useDeferredValue</h3><blockquote>
+<p>Concurrent UI 模式 (试验阶段)</p>
+</blockquote>
+<p>延迟获取数据</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/react/" rel="tag"># react</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/08/15/l5/" rel="next" title="Babel详解">
+                <i class="fa fa-chevron-left"></i> Babel详解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpeg" alt="五月幺幺">
+            
+              <p class="site-author-name" itemprop="name">五月幺幺</p>
+              <p class="site-description motion-element" itemprop="description">被代码耽误的文青</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/liaoyf" title="GitHub &rarr; https://github.com/liaoyf" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:liao_yf@126.com" title="E-Mail &rarr; mailto:liao_yf@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#React-createElement"><span class="nav-number">1.</span> <span class="nav-text">React.createElement</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#React-cloneElement"><span class="nav-number">2.</span> <span class="nav-text">React.cloneElement</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#React-Component"><span class="nav-number">3.</span> <span class="nav-text">React.Component</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#React-PureComponent"><span class="nav-number">4.</span> <span class="nav-text">React.PureComponent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#React-Children"><span class="nav-number">5.</span> <span class="nav-text">React.Children</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#React-createContext"><span class="nav-number">6.</span> <span class="nav-text">React.createContext</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#React-createRef"><span class="nav-number">7.</span> <span class="nav-text">React.createRef</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#React-forwardRef"><span class="nav-number">8.</span> <span class="nav-text">React.forwardRef</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#React-memo"><span class="nav-number">9.</span> <span class="nav-text">React.memo</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#React-lazy"><span class="nav-number">10.</span> <span class="nav-text">React.lazy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#React-Hook"><span class="nav-number">11.</span> <span class="nav-text">React Hook</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#useCallback"><span class="nav-number">11.1.</span> <span class="nav-text">useCallback</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#useMemo"><span class="nav-number">11.2.</span> <span class="nav-text">useMemo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#useContext"><span class="nav-number">11.3.</span> <span class="nav-text">useContext</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#useEffect"><span class="nav-number">11.4.</span> <span class="nav-text">useEffect</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#useLayoutEffect"><span class="nav-number">11.5.</span> <span class="nav-text">useLayoutEffect</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#useImperativeHandle"><span class="nav-number">11.6.</span> <span class="nav-text">useImperativeHandle</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#useDebugValue"><span class="nav-number">11.7.</span> <span class="nav-text">useDebugValue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#useReducer"><span class="nav-number">11.8.</span> <span class="nav-text">useReducer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#useRef"><span class="nav-number">11.9.</span> <span class="nav-text">useRef</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#useState"><span class="nav-number">11.10.</span> <span class="nav-text">useState</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#useTransition"><span class="nav-number">11.11.</span> <span class="nav-text">useTransition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#useDeferredValue"><span class="nav-number">11.12.</span> <span class="nav-text">useDeferredValue</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">五月幺幺</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.0"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
